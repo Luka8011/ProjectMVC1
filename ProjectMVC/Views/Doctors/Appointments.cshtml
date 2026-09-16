@@ -1,0 +1,67 @@
+﻿@model ClassLibrary1.Data.Models.Doctor
+
+@{
+    var doctorAppointments = ViewBag.DoctorAppointments as List<ClassLibrary1.Data.Models.Appointment>;
+    var userAppointments = ViewBag.UserAppointments as List<ClassLibrary1.Data.Models.Appointment>;
+    var userRole = Context.Session.GetString("UserRole");
+}
+
+@if (userRole == "Patient" || userRole == "User")
+{
+    <div class="container mt-4">
+
+        @* 1. Doctor Profile & Booking Form (Only renders when a Doctor is selected) *@
+        @if (Model != null)
+        {
+            <div class="card p-4 shadow-sm mb-4">
+                <div class="d-flex gap-4 align-items-center">
+                    <img src="@(string.IsNullOrEmpty(Model.AvatarPath) ? "/images/default-avatar.jpg" : Model.AvatarPath)"
+                         alt="Dr. @Model.DoctorFirstName @Model.DoctorLastName"
+                         class="rounded-circle" width="100" height="100" style="object-fit: cover;" />
+                    <div>
+                        <h2>Dr. @Model.DoctorFirstName @Model.DoctorLastName</h2>
+                        <p class="text-muted mb-1">@Model.DoctorSpecialization</p>
+                        <p class="mb-0"><strong>Email:</strong> @Model.DoctorMail</p>
+                    </div>
+                </div>
+            </div>
+
+            @* Put your booking slot calendar / form here *@
+        }
+
+        @* 2. My Booked Appointments (Renders when user is logged in) *@
+        @if (userAppointments != null && userAppointments.Any())
+        {
+            <h3 class="mb-3">My Scheduled Appointments</h3>
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Date & Time</th>
+                            <th>Doctor</th>
+                            <th>Specialization</th>
+                            <th>Room</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var appt in userAppointments)
+                        {
+                            <tr>
+                                <td>@appt.AppointmentDate?.ToString("f")</td>
+                                <td>Dr. @appt.FkDoctor?.DoctorFirstName @appt.FkDoctor?.DoctorLastName</td>
+                                <td>@appt.FkDoctor?.DoctorSpecialization</td>
+                                <td>@appt.AppointmentRoomNumber</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else if (Model == null)
+        {
+            <div class="alert alert-info">
+                You have no scheduled appointments. <a asp-controller="Doctors" asp-action="DoctorsView" class="alert-link">Select a doctor to book one.</a>
+            </div>
+        }
+    </div>
+}

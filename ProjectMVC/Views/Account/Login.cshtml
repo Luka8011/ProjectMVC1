@@ -1,0 +1,19 @@
+﻿@{
+
+}
+@model ProjectMVC.Models.LoginModel
+<div>
+    <form asp-controller="Account" asp-action="Login" method="post">
+        <div class="mb-3">
+            <label for="UserEmail" class="form-label">Email Address</label>
+            <input type="email" id="UserEmail" name="UserEmail" class="form-control" placeholder="Enter Email" required />
+        </div>
+
+        <div class="mb-3">
+            <label for="UserPassword" class="form-label">Password</label>
+            <input type="password" id="UserPassword" name="UserPassword" class="form-control" placeholder="Enter Password" required />
+        </div>
+
+        <button type="submit" class="btn btn-primary">Log In</button>
+    </form>
+</div>

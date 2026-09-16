@@ -1,0 +1,83 @@
+﻿@model IEnumerable<ClassLibrary1.Data.Models.LabResult>
+
+@{
+    ViewData["Title"] = "Lab Results";
+}
+
+<div class="container mt-4">
+    <div class="mb-4">
+        <h2>Laboratory Test Results</h2>
+        <p class="text-muted">View diagnostic outcomes, test notes, and reference ranges.</p>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info shadow-sm">
+            No lab results available at this time.
+        </div>
+    }
+    else
+    {
+        <div class="card shadow-sm p-3">
+            <div class="table-responsive">
+                <table class="table table-hover table-striped align-middle mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Result Date</th>
+                            <th>Test Details</th>
+                            <th>Result Value</th>
+                            <th>Reference Range</th>
+                            <th>Doctor Notes</th>
+                            <th>Ordering Doctor</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var result in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <strong>@(result.ResultDate?.ToString("MMM dd, yyyy") ?? "N/A")</strong><br />
+                                    <small class="text-muted">@(result.ResultDate?.ToString("hh:mm tt") ?? "")</small>
+                                </td>
+                                <td>
+                                    <span class="fw-bold">@(result.FkLabTest?.TestName ?? "Test")</span>
+                                    @if (!string.IsNullOrWhiteSpace(result.FkLabTest?.TestDescription))
+                                    {
+                                        <br />
+                                        <small class="text-muted">@result.FkLabTest.TestDescription</small>
+                                    }
+                                </td>
+                                <td>
+                                    <span class="fs-6 fw-bold text-primary">@result.ResultValue</span>
+                                </td>
+                                <td>
+                                    @if (!string.IsNullOrWhiteSpace(result.FkLabTest?.ReferenceRange))
+                                    {
+                                        <code class="bg-light px-2 py-1 rounded">@result.FkLabTest.ReferenceRange</code>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">-</span>
+                                    }
+                                </td>
+                                <td>
+                                    @(string.IsNullOrWhiteSpace(result.Notes) ? "-" : result.Notes)
+                                </td>
+                                <td>
+                                    @if (result.FkLabOrder?.FkDoctor != null)
+                                    {
+                                        <span>Dr. @result.FkLabOrder.FkDoctor.DoctorFirstName @result.FkLabOrder.FkDoctor.DoctorLastName</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">N/A</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</div>

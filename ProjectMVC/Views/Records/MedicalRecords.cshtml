@@ -1,0 +1,63 @@
+﻿@model IEnumerable<ClassLibrary1.Data.Models.MedicalRecord>
+
+@{
+    ViewData["Title"] = "Medical Records";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2>Medical Records</h2>
+            <p class="text-muted">Patient health history and clinical documentation.</p>
+        </div>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info shadow-sm">
+            No medical records found.
+        </div>
+    }
+    else
+    {
+        <div class="card shadow-sm p-3">
+            <div class="table-responsive">
+                <table class="table table-hover table-striped align-middle mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Record ID</th>
+                            <th>Creation Date</th>
+                            <th>Patient Name</th>
+                            <th>Description / Clinical Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var record in Model)
+                        {
+                            <tr>
+                                <td><strong>#@record.RecordId</strong></td>
+                                <td>
+                                    <strong>@(record.RecordCreationTime?.ToString("MMM dd, yyyy") ?? "N/A")</strong><br />
+                                    <small class="text-muted">@(record.RecordCreationTime?.ToString("hh:mm tt") ?? "")</small>
+                                </td>
+                                <td>
+                                    @if (record.FkPatient != null)
+                                    {
+                                        <span>@record.FkPatient.PatientFirstName @record.FkPatient.PatientLastName</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">N/A</span>
+                                    }
+                                </td>
+                                <td>
+                                    @(string.IsNullOrWhiteSpace(record.RecordDescription) ? "No description provided." : record.RecordDescription)
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</div>

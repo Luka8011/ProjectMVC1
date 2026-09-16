@@ -1,0 +1,116 @@
+﻿@* Views/Doctor/DoctorsView.cshtml *@
+@model IEnumerable<ClassLibrary1.Data.Models.Doctor>
+
+@{
+    ViewData["Title"] = "Doctors Directory";
+    var specializations = ViewBag.Specializations as List<string>;
+    string currentFilter = ViewData["CurrentFilter"]?.ToString() ?? "";
+    string selectedSpecialization = ViewBag.SelectedSpecialization as string ?? "";
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2>Doctors Directory</h2>
+            <p class="text-muted mb-0">Find and book appointments with our specialist physicians.</p>
+        </div>
+    </div>
+
+    <div class="card p-3 shadow-sm mb-4 bg-light">
+        <form asp-controller="Doctors" asp-action="DoctorsView" method="get">
+            <div class="row g-3 align-items-center">
+                <div class="col-md-5">
+                    <div class="input-group">
+                        <input type="text"
+                               name="searchString"
+                               value="@currentFilter"
+                               class="form-control"
+                               placeholder="Search doctor by name..." />
+                        <button type="submit" class="btn btn-primary">Search</button>
+                    </div>
+                </div>
+
+                <div class="col-md-5">
+                    <select id="specializationSelect"
+                            name="selectedSpecialization"
+                            class="form-select"
+                            onchange="this.form.submit()">
+                        <option value="">All Specializations</option>
+                        @if (specializations != null)
+                        {
+                            @foreach (var spec in specializations)
+                            {
+                                <option value="@spec" selected="@(spec == selectedSpecialization)">
+                                    @spec
+                                </option>
+                            }
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-2 text-end">
+                    @if (!string.IsNullOrEmpty(currentFilter) || !string.IsNullOrEmpty(selectedSpecialization))
+                    {
+                        <a asp-action="DoctorsView" class="btn btn-outline-secondary w-100">Clear Filters</a>
+                    }
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        @if (Model != null && Model.Any())
+        {
+            @foreach (var doctor in Model)
+            {
+                <div class="col">
+                    <div class="card h-100 shadow-sm border-0 text-center p-3">
+                        <div class="d-flex justify-content-center pt-2">
+                            <img src="@(string.IsNullOrEmpty(doctor.AvatarPath) ? "/images/default-avatar.jpg" : doctor.AvatarPath)"
+                                 alt="Dr. @doctor.DoctorFirstName @doctor.DoctorLastName"
+                                 style="width: 140px; height: 140px; object-fit: cover;"
+                                 class="rounded-circle img-thumbnail border-2" />
+                        </div>
+
+                        <div class="card-body d-flex flex-column justify-content-between">
+                            <div>
+                                <h5 class="card-title fw-bold mb-1">Dr. @doctor.DoctorFirstName @doctor.DoctorLastName</h5>
+                                <span class="badge bg-primary mb-2">@(doctor.DoctorSpecialization ?? "General Practice")</span>
+
+                                <p class="card-text text-muted small mb-1">
+                                    <strong>Email:</strong> @(doctor.DoctorMail ?? "N/A")
+                                </p>
+                                <p class="card-text text-muted small mb-3">
+                                    <strong>Hours:</strong> @(doctor.WorkHours ?? "09:00 - 17:00")
+                                </p>
+                            </div>
+
+                            <div class="mt-auto pt-2">
+                                <a asp-controller="Doctors"
+                                   asp-action="Appointments"
+                                   asp-route-doctorId="@doctor.DoctorId"
+                                   class="btn btn-success w-100">
+                                    Book Appointment
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="col-12 w-100">
+                <div class="alert alert-info text-center py-4" role="alert">
+                    <h5>No doctors found</h5>
+                    <p class="mb-0">Try clearing your search query or selecting a different specialization.</p>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<ElicitationsGroup message="Would you like to enhance this view further?">
+    <Elicitation label="Add pagination for the doctors list" query="How can I add pagination controls to the DoctorsView in ASP.NET Core MVC?" />
+    <Elicitation label="Display doctor's next available appointment slot on the card" query="How can I query and display each doctor's next available appointment time directly inside their card on DoctorsView?" />
+</ElicitationsGroup>
