@@ -52,7 +52,6 @@ namespace ProjectMVC.Controllers
             var userRole = HttpContext.Session.GetString("UserRole");
             int? userId = HttpContext.Session.GetInt32("UserId");
 
-            // --- DOCTOR VIEW LOGIC ---
             if (userRole == "Doctor")
             {
                 string? userEmail = HttpContext.Session.GetString("UserName");
@@ -82,8 +81,6 @@ namespace ProjectMVC.Controllers
                 return View(loggedInDoctor);
             }
 
-            // --- PATIENT / USER VIEW LOGIC ---
-            // Fetch user's existing booked appointments if logged in
             if (userId.HasValue)
             {
                 ViewBag.UserAppointments = await _context.Appointments
@@ -95,7 +92,6 @@ namespace ProjectMVC.Controllers
                     .ToListAsync();
             }
 
-            // If a doctor was selected, prepare booking slot data
             if (doctorId.HasValue)
             {
                 var doctor = await _context.Doctors.FindAsync(doctorId.Value);
@@ -110,13 +106,15 @@ namespace ProjectMVC.Controllers
                 return View(doctor);
             }
 
-            // Return view without a Doctor model (User will see "My Booked Appointments")
             return View();
         }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ConfirmBooking(
             Appointment appointment,
+            string AppointmentDateOnly,
+            string AppointmentTimeSlot,
             string PatientFirstName,
             string PatientLastName,
             string PatientEmail,
@@ -127,6 +125,15 @@ namespace ProjectMVC.Controllers
         {
             int? userId = HttpContext.Session.GetInt32("UserId");
 
+            if (!string.IsNullOrEmpty(AppointmentDateOnly) && !string.IsNullOrEmpty(AppointmentTimeSlot))
+            {
+                var startTimeStr = AppointmentTimeSlot.Split('-')[0].Trim();
+                if (DateTime.TryParse($"{AppointmentDateOnly} {startTimeStr}", out DateTime parsedDateTime))
+                {
+                    appointment.AppointmentDate = parsedDateTime;
+                }
+            }
+
             var patient = new Patient
             {
                 PatientFirstName = PatientFirstName,
@@ -134,7 +141,7 @@ namespace ProjectMVC.Controllers
                 PatientMail = PatientEmail,
                 PatientPhoneNumber = PatientPhone,
                 PatientDob = DateOnly.FromDateTime(PatientDOB),
-                FkUserId = userId // Link created patient to logged-in user
+                FkUserId = userId
             };
 
             if (!string.IsNullOrWhiteSpace(PatientBloodType))
@@ -144,6 +151,7 @@ namespace ProjectMVC.Controllers
 
             var doctor = await _context.Doctors.FindAsync(FkDoctorId);
 
+            appointment.FkDoctorId = FkDoctorId;
             appointment.FkPatient = patient;
             appointment.FkDoctor = doctor;
 
@@ -157,15 +165,10 @@ namespace ProjectMVC.Controllers
                 _context.Patients.Add(patient);
                 _context.Appointments.Add(appointment);
 
-                if (appointment.FkDoctor != null && appointment.FkDoctor.AvatarPath == null)
-                {
-                    appointment.FkDoctor.AvatarPath = "/images/default-avatar.jpg";
-                }
-
                 await _context.SaveChangesAsync();
 
                 TempData["SuccessMessage"] = "Your appointment has been successfully booked!";
-                return RedirectToAction("Index", "Home");
+                return RedirectToAction("Appointments");
             }
 
             if (doctor == null) return NotFound();
@@ -178,7 +181,6 @@ namespace ProjectMVC.Controllers
             ViewBag.SelectedDate = selectedDate.ToString("yyyy-MM-dd");
             ViewBag.AvailableSlots = await doctorModel.GetAvailableSlotsAsync(appointment.FkDoctorId ?? doctor.DoctorId, selectedDate);
 
-            // Re-populate existing appointments on validation failure
             if (userId.HasValue)
             {
                 ViewBag.UserAppointments = await _context.Appointments

@@ -2,7 +2,261 @@
     ViewData["Title"] = "Home Page";
 }
 
-<div class="btn-group-vertical">
-    <a class="btn btn-success" asp-controller="Account" asp-action="Login">Login</a>
-    <a class="btn btn-light" asp-controller="Account" asp-action="Register">Register</a>
+<div class="container py-5">
+
+    <!-- Welcome Section -->
+    <div class="text-center mb-5">
+        <h1 class="display-4 fw-bold text-primary">
+            Welcome to MediCare
+        </h1>
+
+        <p class="lead text-muted">
+            Your health, all in one place.
+            Manage appointments, medical records, laboratory services and payments.
+        </p>
+    </div>
+
+    <!-- Main Cards -->
+    <div class="row g-4">
+
+        <!-- Doctors (Public) -->
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body text-center p-4">
+                    <div class="display-4 mb-3">👨‍⚕️</div>
+                    <h4>Doctors</h4>
+                    <p class="text-muted">
+                        Find doctors and explore available healthcare professionals.
+                    </p>
+
+                    <a asp-controller="Doctors"
+                       asp-action="DoctorsView"
+                       class="btn btn-primary">
+                        View Doctors
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Appointments (Login Required) -->
+        @if (User.Identity != null && User.Identity.IsAuthenticated)
+        {
+            <div class="col-md-4">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body text-center p-4">
+                        <div class="display-4 mb-3">📅</div>
+                        <h4>Appointments</h4>
+                        <p class="text-muted">
+                            Manage your doctor appointments and scheduled visits.
+                        </p>
+
+                        <a asp-controller="Doctors"
+                           asp-action="Appointments"
+                           class="btn btn-primary">
+                            View Appointments
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- Medications -->
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body text-center p-4">
+                    <div class="display-4 mb-3">💊</div>
+
+                    <h4>Medications</h4>
+
+                    <p class="text-muted">
+                        Browse medications, descriptions, prices and availability.
+                    </p>
+
+                    <a asp-controller="Medication"
+                       asp-action="Index"
+                       class="btn btn-primary">
+                        Browse Medicines
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Medical Records (Login Required) -->
+        @if (User.Identity != null && User.Identity.IsAuthenticated)
+        {
+            <div class="col-md-4">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body text-center p-4">
+                        <div class="display-4 mb-3">📋</div>
+                        <h4>Medical Records</h4>
+                        <p class="text-muted">
+                            View and manage your personal medical information.
+                        </p>
+
+                        <a asp-controller="MedicalRecords"
+                           asp-action="Index"
+                           class="btn btn-primary">
+                            View Records
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- Laboratory Services (Doctor Only) -->
+        @if (User.IsInRole("Doctor"))
+        {
+            <!-- Create Lab Order -->
+            <div class="col-md-4">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body text-center p-4">
+                        <div class="display-4 mb-3">🧪</div>
+                        <h4>Create Lab Order</h4>
+                        <p class="text-muted">Create a new laboratory test order for a patient.</p>
+
+                        <a asp-controller="LabOrders"
+                           asp-action="Create"
+                           class="btn btn-primary">
+                            Create Lab Order
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- View Lab Orders -->
+            <div class="col-md-4">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body text-center p-4">
+                        <div class="display-4 mb-3">📋</div>
+                        <h4>View Lab Orders</h4>
+                        <p class="text-muted">View laboratory orders and their statuses.</p>
+
+                        <a asp-controller="LabOrders"
+                           asp-action="Index"
+                           class="btn btn-primary">
+                            View Lab Orders
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- View Lab Results -->
+            <div class="col-md-4">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body text-center p-4">
+                        <div class="display-4 mb-3">🔬</div>
+                        <h4>View Lab Results</h4>
+                        <p class="text-muted">View diagnostic results and reference ranges.</p>
+
+                        <a asp-controller="LabResults"
+                           asp-action="Index"
+                           class="btn btn-primary">
+                            View Results
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- Billing Administration (Admin Only) -->
+        @if (Context.Session.GetString("UserRole") == "Admin")
+        {
+            <div class="col-md-4">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body text-center p-4">
+                        <div class="display-4 mb-3">🧾</div>
+                        <h4>Invoices &amp; Charges</h4>
+                        <p class="text-muted">
+                            Review, edit and track patient invoices and payments.
+                        </p>
+
+                        <a asp-controller="Admin"
+                           asp-action="Invoices"
+                           class="btn btn-primary">
+                            Manage Invoices
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body text-center p-4">
+                        <div class="display-4 mb-3">➕</div>
+                        <h4>Create Invoice</h4>
+                        <p class="text-muted">
+                            Issue a new charge to a patient.
+                        </p>
+
+                        <a asp-controller="Admin"
+                           asp-action="CreateInvoice"
+                           class="btn btn-primary">
+                            Create Invoice
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- Payments -->
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body text-center p-4">
+                    <div class="display-4 mb-3">💳</div>
+                    <h4>Payments</h4>
+                    <p class="text-muted">
+                        View and manage your medical payments.
+                    </p>
+
+                    <a asp-controller="Payment"
+                       asp-action="Payments"
+                       class="btn btn-primary">
+                        View Payments
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Login (Not Logged In) -->
+        @if (User.Identity == null || !User.Identity.IsAuthenticated)
+        {
+            <div class="col-md-4">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body text-center p-4">
+                        <div class="display-4 mb-3">🔐</div>
+                        <h4>Login</h4>
+                        <p class="text-muted">
+                            Sign in to your account to access your health services.
+                        </p>
+
+                        <a asp-controller="Account"
+                           asp-action="Login"
+                           class="btn btn-outline-primary">
+                            Login
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Register -->
+            <div class="col-md-4">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body text-center p-4">
+                        <div class="display-4 mb-3">📝</div>
+                        <h4>Register</h4>
+                        <p class="text-muted">
+                            Create an account to get started with our medical services.
+                        </p>
+
+                        <a asp-controller="Account"
+                           asp-action="Register"
+                           class="btn btn-outline-primary">
+                            Register
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
+
+    </div>
 </div>

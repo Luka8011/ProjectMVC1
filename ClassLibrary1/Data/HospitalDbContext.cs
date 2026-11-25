@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using ClassLibrary1.Data.Models;
 using Microsoft.EntityFrameworkCore;
@@ -42,10 +42,6 @@ public partial class HospitalDbContext : DbContext
 
     public virtual DbSet<User> Users { get; set; }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Server=(localdb)\\MSSQLLocalDB;Database=HospitalDatabase;Trusted_Connection=True;TrustServerCertificate=True;");
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Appointment>(entity =>
@@ -53,7 +49,7 @@ public partial class HospitalDbContext : DbContext
             entity.HasKey(e => e.AppointmentId).HasName("PK__Appointm__8ECDFCA21BEE4A3C");
 
             entity.Property(e => e.AppointmentId).HasColumnName("AppointmentID");
-            entity.Property(e => e.AppointmentDate).HasColumnType("datetime");
+            entity.Property(e => e.AppointmentDate).HasColumnType("timestamp without time zone");
             entity.Property(e => e.FkAppointmentDepartmentId).HasColumnName("FK_AppointmentDepartmentID");
             entity.Property(e => e.FkDoctorId).HasColumnName("FK_DoctorID");
             entity.Property(e => e.FkPatientId).HasColumnName("FK_PatientID");
@@ -115,12 +111,12 @@ public partial class HospitalDbContext : DbContext
             entity.HasKey(e => e.InvoiceId).HasName("PK__Invoices__D796AAD54162723A");
 
             entity.Property(e => e.InvoiceId).HasColumnName("InvoiceID");
-            entity.Property(e => e.AmountToPay).HasColumnType("decimal(9, 2)");
-            entity.Property(e => e.InvoiceCreationDate).HasColumnType("datetime");
-            entity.Property(e => e.DueDate).HasColumnType("datetime");
+            entity.Property(e => e.AmountToPay).HasColumnType("numeric(9, 2)");
+            entity.Property(e => e.InvoiceCreationDate).HasColumnType("timestamp without time zone");
+            entity.Property(e => e.DueDate).HasColumnType("timestamp without time zone");
             entity.Property(e => e.FkPatientId).HasColumnName("FK_PatientID");
             entity.Property(e => e.FkPrescriptionId).HasColumnName("FK_PrescriptionID");
-            entity.Property(e => e.InvoicePaymentDate).HasColumnType("datetime");
+            entity.Property(e => e.InvoicePaymentDate).HasColumnType("timestamp without time zone");
             entity.Property(e => e.InvoiceStatus).HasMaxLength(20);
             entity.Property(e => e.FkUserId).HasColumnName("FK_UserID"); ;
 
@@ -131,6 +127,11 @@ public partial class HospitalDbContext : DbContext
             entity.HasOne(d => d.FkPrescription).WithMany(p => p.Invoices)
                 .HasForeignKey(d => d.FkPrescriptionId)
                 .HasConstraintName("FK__Invoices__FK_Pre__5EBF139D");
+
+            entity.HasOne(d => d.FkUser)
+            .WithMany()
+            .HasForeignKey(d => d.FkUserId)
+            .HasConstraintName("FK_Invoices_Users");
         });
 
         modelBuilder.Entity<LabOrder>(entity =>
@@ -142,8 +143,8 @@ public partial class HospitalDbContext : DbContext
             entity.Property(e => e.FkDoctorId).HasColumnName("FK_DoctorID");
             entity.Property(e => e.FkPatientId).HasColumnName("FK_PatientID");
             entity.Property(e => e.OrderDate)
-                .HasDefaultValueSql("(getdate())")
-                .HasColumnType("datetime");
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("timestamp without time zone");
             entity.Property(e => e.OrderStatus)
                 .HasMaxLength(20)
                 .HasDefaultValue("Requested");
@@ -172,8 +173,8 @@ public partial class HospitalDbContext : DbContext
             entity.Property(e => e.FkLabTestId).HasColumnName("FK_LabTestID");
             entity.Property(e => e.Notes).HasMaxLength(300);
             entity.Property(e => e.ResultDate)
-                .HasDefaultValueSql("(getdate())")
-                .HasColumnType("datetime");
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("timestamp without time zone");
             entity.Property(e => e.ResultValue).HasMaxLength(100);
 
             entity.HasOne(d => d.FkLabOrder).WithMany(p => p.LabResults)
@@ -193,7 +194,7 @@ public partial class HospitalDbContext : DbContext
 
             entity.Property(e => e.LabTestId).HasColumnName("LabTestID");
             entity.Property(e => e.ReferenceRange).HasMaxLength(100);
-            entity.Property(e => e.TestCost).HasColumnType("decimal(9, 2)");
+            entity.Property(e => e.TestCost).HasColumnType("numeric(9, 2)");
             entity.Property(e => e.TestDescription).HasMaxLength(250);
             entity.Property(e => e.TestName).HasMaxLength(100);
         });
@@ -204,7 +205,7 @@ public partial class HospitalDbContext : DbContext
 
             entity.Property(e => e.RecordId).HasColumnName("RecordID");
             entity.Property(e => e.FkPatientId).HasColumnName("FK_PatientID");
-            entity.Property(e => e.RecordCreationTime).HasColumnType("datetime");
+            entity.Property(e => e.RecordCreationTime).HasColumnType("timestamp without time zone");
             entity.Property(e => e.RecordDescription)
                 .HasMaxLength(400)
                 .IsUnicode(false);
@@ -221,7 +222,8 @@ public partial class HospitalDbContext : DbContext
             entity.Property(e => e.MedicationId).HasColumnName("MedicationID");
             entity.Property(e => e.MedicationDescription).HasMaxLength(250);
             entity.Property(e => e.MedicationName).HasMaxLength(75);
-            entity.Property(e => e.UnitPrice).HasColumnType("decimal(9, 2)");
+            entity.Property(e => e.UnitPrice).HasColumnType("numeric(9, 2)");
+            entity.Property(e => e.ImagePath);
         });
 
         modelBuilder.Entity<Patient>(entity =>
@@ -255,9 +257,9 @@ public partial class HospitalDbContext : DbContext
             entity.HasKey(e => e.PaymentId).HasName("PK__Payments__9B556A58D7D352F9");
 
             entity.Property(e => e.PaymentId).HasColumnName("PaymentID");
-            entity.Property(e => e.AmountPaid).HasColumnType("decimal(9, 2)");
+            entity.Property(e => e.AmountPaid).HasColumnType("numeric(9, 2)");
             entity.Property(e => e.FkInvoiceId).HasColumnName("FK_InvoiceID");
-            entity.Property(e => e.PaymentDate).HasColumnType("datetime");
+            entity.Property(e => e.PaymentDate).HasColumnType("timestamp without time zone");
             entity.Property(e => e.PaymentMethod).HasMaxLength(50);
 
             entity.Property(e => e.Fk_UserId).HasColumnName("FK_UserID");
@@ -278,7 +280,7 @@ public partial class HospitalDbContext : DbContext
             entity.Property(e => e.FkMedicationId).HasColumnName("FK_MedicationID");
             entity.Property(e => e.FkPatientId).HasColumnName("FK_PatientID");
             entity.Property(e => e.Frequency).HasMaxLength(50);
-            entity.Property(e => e.PrescriptionDate).HasColumnType("datetime");
+            entity.Property(e => e.PrescriptionDate).HasColumnType("timestamp without time zone");
 
             entity.HasOne(d => d.FkDoctor).WithMany(p => p.Prescriptions)
                 .HasForeignKey(d => d.FkDoctorId)
@@ -309,3 +311,4 @@ public partial class HospitalDbContext : DbContext
 
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
 }
+
