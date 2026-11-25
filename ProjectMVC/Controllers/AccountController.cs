@@ -1,5 +1,4 @@
-﻿using Azure;
-using ClassLibrary1.Data;
+﻿using ClassLibrary1.Data;
 using ClassLibrary1.Data.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
