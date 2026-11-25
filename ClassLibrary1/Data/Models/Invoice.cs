@@ -29,4 +29,5 @@ public partial class Invoice
     public virtual Prescription? FkPrescription { get; set; }
 
     public virtual ICollection<Payment> Payments { get; set; } = new List<Payment>();
+    public virtual User? FkUser { get; set; }
 }

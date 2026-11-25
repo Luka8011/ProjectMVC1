@@ -1,0 +1,81 @@
+﻿@{
+    ViewData["Title"] = "Create Lab Order";
+    var patients = ViewBag.Patients as IEnumerable<dynamic>;
+    var labTests = ViewBag.LabTests as IEnumerable<ClassLibrary1.Data.Models.LabTest>;
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Create New Laboratory Order</h4>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Create" method="post">
+                        @Html.AntiForgeryToken()
+
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                        <!-- Select Patient -->
+                        <div class="mb-3">
+                            <label for="patientId" class="form-label fw-bold">Select Patient</label>
+                            <select id="patientId" name="patientId" class="form-select" required>
+                                <option value="">-- Choose a Patient --</option>
+                                @if (patients != null)
+                                {
+                                    @foreach (var p in patients)
+                                    {
+                                        <option value="@p.PatientId">@p.Name</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+
+                        <!-- Select Lab Tests -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Select Tests to Order</label>
+                            <div class="border rounded p-3 bg-light" style="max-height: 250px; overflow-y: auto;">
+                                @if (labTests != null && labTests.Any())
+                                {
+                                    @foreach (var test in labTests)
+                                    {
+                                        <div class="form-check mb-2">
+                                            <input class="form-check-input"
+                                                   type="checkbox"
+                                                   name="selectedTestIds"
+                                                   value="@test.LabTestId"
+                                                   id="test_@test.LabTestId">
+                                            <label class="form-check-label d-flex justify-content-between align-items-center" for="test_@test.LabTestId">
+                                                <span>
+                                                    <strong>@test.TestName</strong>
+                                                    @if (!string.IsNullOrWhiteSpace(test.TestDescription))
+                                                    {
+                                                        <br /><small class="text-muted">@test.TestDescription</small>
+                                                    }
+                                                </span>
+                                                @if (!string.IsNullOrWhiteSpace(test.ReferenceRange))
+                                                {
+                                                    <span class="badge bg-outline-secondary text-dark border">Ref: @test.ReferenceRange</span>
+                                                }
+                                            </label>
+                                        </div>
+                                    }
+                                }
+                                else
+                                {
+                                    <p class="text-muted mb-0">No lab tests available.</p>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-primary px-4">Submit Order</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

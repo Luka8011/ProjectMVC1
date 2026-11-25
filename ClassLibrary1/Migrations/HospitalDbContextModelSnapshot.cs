@@ -3,8 +3,8 @@ using System;
 using ClassLibrary1.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
@@ -18,35 +18,35 @@ namespace ClassLibrary1.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("ProductVersion", "10.0.11")
-                .HasAnnotation("Relational:MaxIdentifierLength", 128);
+                .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
-            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+            NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
             modelBuilder.Entity("ClassLibrary1.Data.Models.Appointment", b =>
                 {
                     b.Property<int>("AppointmentId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("AppointmentID");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AppointmentId"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("AppointmentId"));
 
                     b.Property<DateTime?>("AppointmentDate")
-                        .HasColumnType("datetime");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<int?>("AppointmentRoomNumber")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.Property<int?>("FkAppointmentDepartmentId")
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("FK_AppointmentDepartmentID");
 
                     b.Property<int?>("FkDoctorId")
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("FK_DoctorID");
 
                     b.Property<int?>("FkPatientId")
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("FK_PatientID");
 
                     b.HasKey("AppointmentId")
@@ -65,14 +65,14 @@ namespace ClassLibrary1.Migrations
                 {
                     b.Property<int>("DepartmentId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("DepartmentID");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("DepartmentId"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("DepartmentId"));
 
                     b.Property<string>("DepartmentName")
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("character varying(50)");
 
                     b.HasKey("DepartmentId")
                         .HasName("PK__Departme__B2079BCDE99A1AE4");
@@ -84,48 +84,47 @@ namespace ClassLibrary1.Migrations
                 {
                     b.Property<int>("DoctorId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("DoctorID");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("DoctorId"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("DoctorId"));
 
                     b.Property<string>("AvatarPath")
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
+                        .HasColumnType("text");
 
                     b.Property<string>("DoctorFirstName")
                         .HasMaxLength(40)
-                        .HasColumnType("nvarchar(40)");
+                        .HasColumnType("character varying(40)");
 
                     b.Property<string>("DoctorLastName")
                         .HasMaxLength(40)
-                        .HasColumnType("nvarchar(40)");
+                        .HasColumnType("character varying(40)");
 
                     b.Property<string>("DoctorLicenseNumber")
                         .HasMaxLength(30)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(30)");
+                        .HasColumnType("character varying(30)");
 
                     b.Property<string>("DoctorMail")
                         .HasMaxLength(70)
-                        .HasColumnType("nvarchar(70)");
+                        .HasColumnType("character varying(70)");
 
                     b.Property<string>("DoctorSpecialization")
                         .HasMaxLength(100)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(100)");
+                        .HasColumnType("character varying(100)");
 
                     b.Property<int?>("FkDepartmentId")
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("FK_DepartmentID");
 
                     b.Property<int?>("FkUserId")
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("FK_UserID");
 
                     b.Property<string>("WorkHours")
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("character varying(100)");
 
                     b.HasKey("DoctorId")
                         .HasName("PK__Doctors__2DC00EDF89646B08");
@@ -134,38 +133,45 @@ namespace ClassLibrary1.Migrations
 
                     b.HasIndex("FkUserId");
 
-                    b.ToTable("Doctors");
+                    b.ToTable("Doctors", (string)null);
                 });
 
             modelBuilder.Entity("ClassLibrary1.Data.Models.Invoice", b =>
                 {
                     b.Property<int>("InvoiceId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("InvoiceID");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("InvoiceId"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("InvoiceId"));
 
                     b.Property<decimal?>("AmountToPay")
-                        .HasColumnType("decimal(9, 2)");
+                        .HasColumnType("numeric(9, 2)");
 
                     b.Property<DateTime?>("DueDate")
-                        .HasColumnType("datetime");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<int?>("FkPatientId")
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("FK_PatientID");
 
                     b.Property<int?>("FkPrescriptionId")
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("FK_PrescriptionID");
 
-                    b.Property<DateTime?>("InvoiceDate")
-                        .HasColumnType("datetime");
+                    b.Property<int?>("FkUserId")
+                        .HasColumnType("integer")
+                        .HasColumnName("FK_UserID");
+
+                    b.Property<DateTime?>("InvoiceCreationDate")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<DateTime?>("InvoicePaymentDate")
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("InvoiceStatus")
                         .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasColumnType("character varying(20)");
 
                     b.HasKey("InvoiceId")
                         .HasName("PK__Invoices__D796AAD54162723A");
@@ -181,32 +187,32 @@ namespace ClassLibrary1.Migrations
                 {
                     b.Property<int>("LabOrderId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("LabOrderID");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("LabOrderId"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("LabOrderId"));
 
                     b.Property<int?>("FkAppointmentId")
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("FK_AppointmentID");
 
                     b.Property<int>("FkDoctorId")
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("FK_DoctorID");
 
                     b.Property<int>("FkPatientId")
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("FK_PatientID");
 
                     b.Property<DateTime?>("OrderDate")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime")
-                        .HasDefaultValueSql("(getdate())");
+                        .HasColumnType("timestamp without time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<string>("OrderStatus")
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)")
+                        .HasColumnType("character varying(20)")
                         .HasDefaultValue("Requested");
 
                     b.HasKey("LabOrderId")
@@ -225,32 +231,32 @@ namespace ClassLibrary1.Migrations
                 {
                     b.Property<int>("LabResultId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("LabResultID");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("LabResultId"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("LabResultId"));
 
                     b.Property<int>("FkLabOrderId")
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("FK_LabOrderID");
 
                     b.Property<int>("FkLabTestId")
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("FK_LabTestID");
 
                     b.Property<string>("Notes")
                         .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
+                        .HasColumnType("character varying(300)");
 
                     b.Property<DateTime?>("ResultDate")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime")
-                        .HasDefaultValueSql("(getdate())");
+                        .HasColumnType("timestamp without time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<string>("ResultValue")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("character varying(100)");
 
                     b.HasKey("LabResultId")
                         .HasName("PK__LabResul__3CEBE396E48B3DD9");
@@ -266,26 +272,26 @@ namespace ClassLibrary1.Migrations
                 {
                     b.Property<int>("LabTestId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("LabTestID");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("LabTestId"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("LabTestId"));
 
                     b.Property<string>("ReferenceRange")
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("character varying(100)");
 
                     b.Property<decimal>("TestCost")
-                        .HasColumnType("decimal(9, 2)");
+                        .HasColumnType("numeric(9, 2)");
 
                     b.Property<string>("TestDescription")
                         .HasMaxLength(250)
-                        .HasColumnType("nvarchar(250)");
+                        .HasColumnType("character varying(250)");
 
                     b.Property<string>("TestName")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("character varying(100)");
 
                     b.HasKey("LabTestId")
                         .HasName("PK__LabTests__64D339C56514A0B5");
@@ -297,22 +303,22 @@ namespace ClassLibrary1.Migrations
                 {
                     b.Property<int>("RecordId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("RecordID");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("RecordId"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("RecordId"));
 
                     b.Property<int?>("FkPatientId")
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("FK_PatientID");
 
                     b.Property<DateTime?>("RecordCreationTime")
-                        .HasColumnType("datetime");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("RecordDescription")
                         .HasMaxLength(400)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(400)");
+                        .HasColumnType("character varying(400)");
 
                     b.HasKey("RecordId")
                         .HasName("PK__MedicalR__FBDF78C942EF45A1");
@@ -326,24 +332,24 @@ namespace ClassLibrary1.Migrations
                 {
                     b.Property<int>("MedicationId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("MedicationID");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MedicationId"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("MedicationId"));
 
                     b.Property<string>("MedicationDescription")
                         .HasMaxLength(250)
-                        .HasColumnType("nvarchar(250)");
+                        .HasColumnType("character varying(250)");
 
                     b.Property<string>("MedicationName")
                         .HasMaxLength(75)
-                        .HasColumnType("nvarchar(75)");
+                        .HasColumnType("character varying(75)");
 
                     b.Property<int?>("StockQuantity")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.Property<decimal?>("UnitPrice")
-                        .HasColumnType("decimal(9, 2)");
+                        .HasColumnType("numeric(9, 2)");
 
                     b.HasKey("MedicationId")
                         .HasName("PK__Medicati__62EC1ADA74AE1DAE");
@@ -355,23 +361,19 @@ namespace ClassLibrary1.Migrations
                 {
                     b.Property<int>("PatientId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("PatientID");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PatientId"));
-
-                    b.Property<string>("AvatarPath")
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("PatientId"));
 
                     b.Property<int?>("FkUserId")
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("FK_UserID");
 
                     b.Property<string>("PatientBloodType")
                         .HasMaxLength(5)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(5)");
+                        .HasColumnType("character varying(5)");
 
                     b.Property<DateOnly?>("PatientDob")
                         .HasColumnType("date")
@@ -379,29 +381,29 @@ namespace ClassLibrary1.Migrations
 
                     b.Property<string>("PatientFirstName")
                         .HasMaxLength(40)
-                        .HasColumnType("nvarchar(40)");
+                        .HasColumnType("character varying(40)");
 
                     b.Property<string>("PatientGender")
                         .HasMaxLength(6)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(6)");
+                        .HasColumnType("character varying(6)");
 
                     b.Property<string>("PatientInsuranceEmail")
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("character varying(50)");
 
                     b.Property<string>("PatientLastName")
                         .HasMaxLength(40)
-                        .HasColumnType("nvarchar(40)");
+                        .HasColumnType("character varying(40)");
 
                     b.Property<string>("PatientMail")
                         .HasMaxLength(70)
-                        .HasColumnType("nvarchar(70)");
+                        .HasColumnType("character varying(70)");
 
                     b.Property<string>("PatientPhoneNumber")
                         .HasMaxLength(20)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(20)");
+                        .HasColumnType("character varying(20)");
 
                     b.HasKey("PatientId")
                         .HasName("PK__Patients__970EC346961EE700");
@@ -415,29 +417,38 @@ namespace ClassLibrary1.Migrations
                 {
                     b.Property<int>("PaymentId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("PaymentID");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PaymentId"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("PaymentId"));
 
                     b.Property<decimal?>("AmountPaid")
-                        .HasColumnType("decimal(9, 2)");
+                        .HasColumnType("numeric(9, 2)");
 
                     b.Property<int?>("FkInvoiceId")
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("FK_InvoiceID");
 
+                    b.Property<int?>("FkUserUserId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("Fk_UserId")
+                        .HasColumnType("integer")
+                        .HasColumnName("FK_UserID");
+
                     b.Property<DateTime?>("PaymentDate")
-                        .HasColumnType("datetime");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("PaymentMethod")
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("character varying(50)");
 
                     b.HasKey("PaymentId")
                         .HasName("PK__Payments__9B556A58D7D352F9");
 
                     b.HasIndex("FkInvoiceId");
+
+                    b.HasIndex("FkUserUserId");
 
                     b.ToTable("Payments");
                 });
@@ -446,36 +457,36 @@ namespace ClassLibrary1.Migrations
                 {
                     b.Property<int>("PrescriptionId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("PrescriptionID");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PrescriptionId"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("PrescriptionId"));
 
                     b.Property<string>("Dosage")
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("character varying(50)");
 
                     b.Property<int?>("DurationDays")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.Property<int?>("FkDoctorId")
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("FK_DoctorID");
 
                     b.Property<int?>("FkMedicationId")
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("FK_MedicationID");
 
                     b.Property<int?>("FkPatientId")
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("FK_PatientID");
 
                     b.Property<string>("Frequency")
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("character varying(50)");
 
                     b.Property<DateTime?>("PrescriptionDate")
-                        .HasColumnType("datetime");
+                        .HasColumnType("timestamp without time zone");
 
                     b.HasKey("PrescriptionId")
                         .HasName("PK__Prescrip__40130812655E7AFF");
@@ -493,28 +504,26 @@ namespace ClassLibrary1.Migrations
                 {
                     b.Property<int>("UserId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
+                        .HasColumnType("integer")
                         .HasColumnName("UserID");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("UserId"));
-
-                    b.Property<string>("AvatarPath")
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("UserId"));
 
                     b.Property<string>("UserEmail")
                         .HasMaxLength(70)
-                        .HasColumnType("nvarchar(70)");
+                        .HasColumnType("character varying(70)");
+
+                    b.Property<string>("UserName")
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)");
 
                     b.Property<string>("UserPassword")
-                        .HasMaxLength(64)
-                        .IsUnicode(false)
-                        .HasColumnType("char(64)")
-                        .IsFixedLength();
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
 
                     b.Property<string>("UserRole")
                         .HasMaxLength(60)
-                        .HasColumnType("nvarchar(60)");
+                        .HasColumnType("character varying(60)");
 
                     b.HasKey("UserId")
                         .HasName("PK__Users__1788CCACC982AC5D");
@@ -652,7 +661,13 @@ namespace ClassLibrary1.Migrations
                         .HasForeignKey("FkInvoiceId")
                         .HasConstraintName("FK__Payments__FK_Inv__628FA481");
 
+                    b.HasOne("ClassLibrary1.Data.Models.User", "FkUser")
+                        .WithMany()
+                        .HasForeignKey("FkUserUserId");
+
                     b.Navigation("FkInvoice");
+
+                    b.Navigation("FkUser");
                 });
 
             modelBuilder.Entity("ClassLibrary1.Data.Models.Prescription", b =>

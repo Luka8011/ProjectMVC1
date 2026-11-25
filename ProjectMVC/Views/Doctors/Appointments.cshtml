@@ -1,20 +1,51 @@
 ﻿@model ClassLibrary1.Data.Models.Doctor
 
 @{
+    ViewData["Title"] = "Appointments";
     var doctorAppointments = ViewBag.DoctorAppointments as List<ClassLibrary1.Data.Models.Appointment>;
     var userAppointments = ViewBag.UserAppointments as List<ClassLibrary1.Data.Models.Appointment>;
     var userRole = Context.Session.GetString("UserRole");
+
+    // List of standard 1-hour interval time slots
+    var timeSlots = new List<string>
+    {
+        "08:00 - 09:00",
+        "09:00 - 10:00",
+        "10:00 - 11:00",
+        "11:00 - 12:00",
+        "12:00 - 13:00",
+        "13:00 - 14:00",
+        "14:00 - 15:00",
+        "15:00 - 16:00",
+        "16:00 - 17:00"
+    };
 }
 
-@if (userRole == "Patient" || userRole == "User")
+@if (userRole != "Doctor")
 {
     <div class="container mt-4">
 
-        @* 1. Doctor Profile & Booking Form (Only renders when a Doctor is selected) *@
+        @* Alert Messages *@
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                @TempData["SuccessMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                @TempData["ErrorMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
+        @* 1. Doctor Profile & Booking Form *@
         @if (Model != null)
         {
             <div class="card p-4 shadow-sm mb-4">
-                <div class="d-flex gap-4 align-items-center">
+                <div class="d-flex gap-4 align-items-center mb-4">
                     <img src="@(string.IsNullOrEmpty(Model.AvatarPath) ? "/images/default-avatar.jpg" : Model.AvatarPath)"
                          alt="Dr. @Model.DoctorFirstName @Model.DoctorLastName"
                          class="rounded-circle" width="100" height="100" style="object-fit: cover;" />
@@ -24,44 +55,180 @@
                         <p class="mb-0"><strong>Email:</strong> @Model.DoctorMail</p>
                     </div>
                 </div>
-            </div>
 
-            @* Put your booking slot calendar / form here *@
+                <hr />
+
+                <!-- Appointment Booking Form -->
+                <h4 class="mb-3">Book an Appointment</h4>
+                <form asp-action="ConfirmBooking" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="FkDoctorId" value="@Model.DoctorId" />
+
+                    <div class="row g-3">
+                        <!-- Separate Date Selection -->
+                        <div class="col-md-4">
+                            <label for="AppointmentDateOnly" class="form-label fw-bold">Select Date</label>
+                            <input type="date"
+                                   id="AppointmentDateOnly"
+                                   name="AppointmentDateOnly"
+                                   class="form-control"
+                                   min="@DateTime.Now.ToString("yyyy-MM-dd")"
+                                   required />
+                        </div>
+
+                        <!-- 1-Hour Interval Selection -->
+                        <div class="col-md-4">
+                            <label for="AppointmentTimeSlot" class="form-label fw-bold">Select Time Slot</label>
+                            <select id="AppointmentTimeSlot" name="AppointmentTimeSlot" class="form-select" required>
+                                <option value="">-- Choose Time Interval --</option>
+                                @foreach (var slot in timeSlots)
+                                {
+                                    <option value="@slot">@slot</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mt-2">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">First Name</label>
+                            <input type="text" name="PatientFirstName" class="form-control" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Last Name</label>
+                            <input type="text" name="PatientLastName" class="form-control" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Email</label>
+                            <input type="email" name="PatientEmail" class="form-control" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Phone Number</label>
+                            <input type="tel" name="PatientPhone" class="form-control" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Date of Birth</label>
+                            <input type="date" name="PatientDOB" class="form-control" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Blood Type</label>
+                            <input type="text" name="PatientBloodType" class="form-control" placeholder="e.g. A+" />
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-primary px-4">Confirm & Book Appointment</button>
+                        <a asp-controller="Doctors" asp-action="DoctorsView" class="btn btn-outline-secondary ms-2">Back to Doctors</a>
+                    </div>
+                </form>
+            </div>
         }
 
-        @* 2. My Booked Appointments (Renders when user is logged in) *@
+        @* 2. My Booked Appointments *@
         @if (userAppointments != null && userAppointments.Any())
         {
             <h3 class="mb-3">My Scheduled Appointments</h3>
+            <div class="card shadow-sm p-3">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover align-middle mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Date & Time</th>
+                                <th>Doctor</th>
+                                <th>Specialization</th>
+                                <th>Room</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var appt in userAppointments)
+                            {
+                                <tr>
+                                    <td>@appt.AppointmentDate?.ToString("f")</td>
+                                    <td>Dr. @appt.FkDoctor?.DoctorFirstName @appt.FkDoctor?.DoctorLastName</td>
+                                    <td>@appt.FkDoctor?.DoctorSpecialization</td>
+                                    <td>@appt.AppointmentRoomNumber</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+        else if (Model == null)
+        {
+            <div class="alert alert-info shadow-sm">
+                You have no scheduled appointments. <a asp-controller="Doctors" asp-action="DoctorsView" class="alert-link">Select a doctor to book one.</a>
+            </div>
+        }
+    </div>
+}
+else
+{
+<div class="container mt-4">
+    @* Doctor Header *@
+    @if (Model != null)
+    {
+        <div class="card p-4 shadow-sm mb-4 bg-light">
+            <div class="d-flex align-items-center gap-4">
+                <img src="@(string.IsNullOrEmpty(Model.AvatarPath) ? "/images/default-avatar.jpg" : Model.AvatarPath)"
+                     alt="Dr. @Model.DoctorFirstName @Model.DoctorLastName"
+                     class="rounded-circle shadow-sm" width="90" height="90" style="object-fit: cover;" />
+                <div>
+                    <h2 class="mb-1">Welcome, Dr. @Model.DoctorFirstName @Model.DoctorLastName</h2>
+                    <span class="badge bg-primary mb-2">@Model.DoctorSpecialization</span>
+                    <p class="mb-0 text-muted"><strong>Email:</strong> @Model.DoctorMail | <strong>Room:</strong> @Model.WorkHours</p>
+                </div>
+            </div>
+        </div>
+    }
+
+    <h3 class="mb-3">Upcoming Patient Appointments</h3>
+
+    @if (doctorAppointments != null && doctorAppointments.Any())
+    {
+        <div class="card shadow-sm p-3">
             <div class="table-responsive">
-                <table class="table table-striped table-hover">
+                <table class="table table-hover align-middle mb-0">
                     <thead class="table-dark">
                         <tr>
                             <th>Date & Time</th>
-                            <th>Doctor</th>
-                            <th>Specialization</th>
-                            <th>Room</th>
+                            <th>Patient Name</th>
+                            <th>Contact Info</th>
+                            <th>Date of Birth</th>
+                            <th>Blood Type</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (var appt in userAppointments)
+                        @foreach (var appt in doctorAppointments)
                         {
                             <tr>
-                                <td>@appt.AppointmentDate?.ToString("f")</td>
-                                <td>Dr. @appt.FkDoctor?.DoctorFirstName @appt.FkDoctor?.DoctorLastName</td>
-                                <td>@appt.FkDoctor?.DoctorSpecialization</td>
-                                <td>@appt.AppointmentRoomNumber</td>
+                                <td>
+                                    <span class="fw-bold">@appt.AppointmentDate?.ToString("yyyy-MM-dd")</span><br />
+                                    <small class="text-muted">@appt.AppointmentDate?.ToString("hh:mm tt")</small>
+                                </td>
+                                <td class="fw-bold">
+                                    @appt.FkPatient?.PatientFirstName @appt.FkPatient?.PatientLastName
+                                </td>
+                                <td>
+                                    <div><i class="bi bi-envelope"></i> @appt.FkPatient?.PatientMail</div>
+                                    <small class="text-muted"><i class="bi bi-telephone"></i> @appt.FkPatient?.PatientPhoneNumber</small>
+                                </td>
+                                <td>@appt.FkPatient?.PatientDob?.ToString("yyyy-MM-dd")</td>
+                                <td>
+                                    <span class="badge bg-secondary">@(appt.FkPatient?.PatientBloodType ?? "N/A")</span>
+                                </td>
                             </tr>
                         }
                     </tbody>
                 </table>
             </div>
-        }
-        else if (Model == null)
-        {
-            <div class="alert alert-info">
-                You have no scheduled appointments. <a asp-controller="Doctors" asp-action="DoctorsView" class="alert-link">Select a doctor to book one.</a>
-            </div>
-        }
-    </div>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info shadow-sm">
+            No scheduled patient appointments were found.
+        </div>
+    }
+</div>
 }

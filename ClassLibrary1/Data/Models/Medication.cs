@@ -15,5 +15,7 @@ public partial class Medication
 
     public int? StockQuantity { get; set; }
 
+    public string? ImagePath { get; set; }
+
     public virtual ICollection<Prescription> Prescriptions { get; set; } = new List<Prescription>();
 }

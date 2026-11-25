@@ -1,0 +1,129 @@
+﻿@model ClassLibrary1.Data.Models.Invoice
+
+@{
+    ViewData["Title"] = $"Invoice #INV-{Model.InvoiceId}";
+    bool isPaid = Model.InvoiceStatus == "Paid";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
+
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger">@TempData["Error"]</div>
+            }
+
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">Invoice #INV-@Model.InvoiceId</h4>
+                    <span class="badge bg-light text-dark">@(Model.InvoiceStatus ?? "Unknown")</span>
+                </div>
+                <div class="card-body">
+
+                    <dl class="row mb-4">
+                        <dt class="col-sm-4">Patient</dt>
+                        <dd class="col-sm-8">@Model.FkPatient?.PatientFirstName @Model.FkPatient?.PatientLastName</dd>
+
+                        <dt class="col-sm-4">For</dt>
+                        <dd class="col-sm-8">
+                            @if (Model.FkPrescription != null)
+                            {
+                                <span>@(Model.FkPrescription.FkMedication?.MedicationName ?? "Prescription") (Rx #@Model.FkPrescription.PrescriptionId)</span>
+                            }
+                            else
+                            {
+                                <span class="text-muted">General charge</span>
+                            }
+                        </dd>
+
+                        <dt class="col-sm-4">Created</dt>
+                        <dd class="col-sm-8">@(Model.InvoiceCreationDate?.ToString("MMM dd, yyyy hh:mm tt") ?? "N/A")</dd>
+
+                        @if (isPaid)
+                        {
+                            <dt class="col-sm-4">Paid on</dt>
+                            <dd class="col-sm-8">@(Model.InvoicePaymentDate?.ToString("MMM dd, yyyy hh:mm tt") ?? "N/A")</dd>
+                        }
+                    </dl>
+
+                    @if (isPaid)
+                    {
+                        <div class="alert alert-success">
+                            This invoice has been paid in full ($@((Model.AmountToPay ?? 0m).ToString("N2"))) and can no longer be edited.
+                        </div>
+                    }
+                    else
+                    {
+                        <form asp-controller="Admin" asp-action="EditInvoice" method="post" class="mb-4">
+                            <input type="hidden" name="id" value="@Model.InvoiceId" />
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-4">
+                                    <label for="amount" class="form-label fw-bold">Amount ($)</label>
+                                    <input type="number" id="amount" name="amount" class="form-control"
+                                           min="0.01" max="1000000" step="0.01"
+                                           value="@((Model.AmountToPay ?? 0m).ToString("0.00"))" required />
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="dueDate" class="form-label fw-bold">Due date</label>
+                                    <input type="date" id="dueDate" name="dueDate" class="form-control"
+                                           value="@(Model.DueDate?.ToString("yyyy-MM-dd") ?? DateTime.Today.ToString("yyyy-MM-dd"))" required />
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="status" class="form-label fw-bold">Status</label>
+                                    <select id="status" name="status" class="form-select">
+                                        <option value="Pending" selected="@(Model.InvoiceStatus != "Cancelled")">Pending</option>
+                                        <option value="Cancelled" selected="@(Model.InvoiceStatus == "Cancelled")">Cancelled</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                        </form>
+
+                        @if (Model.InvoiceStatus == "Pending")
+                        {
+                            <hr />
+                            <h6 class="fw-bold">Record a payment</h6>
+                            <p class="text-muted small">Use this when the patient pays at the counter. The invoice is marked as paid in full.</p>
+                            <form asp-controller="Admin" asp-action="MarkPaid" method="post" class="d-flex gap-2">
+                                <input type="hidden" name="id" value="@Model.InvoiceId" />
+                                <select name="paymentMethod" class="form-select w-auto">
+                                    <option value="Cash">Cash</option>
+                                    <option value="Card">Card</option>
+                                </select>
+                                <button type="submit" class="btn btn-success"
+                                        onclick="return confirm('Mark this invoice as paid in full?');">
+                                    Mark as Paid
+                                </button>
+                            </form>
+                        }
+                    }
+                </div>
+            </div>
+
+            @if (Model.Payments.Any())
+            {
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header"><h6 class="mb-0">Payments</h6></div>
+                    <div class="table-responsive">
+                        <table class="table mb-0">
+                            <thead class="table-light"><tr><th>Date</th><th>Method</th><th>Amount</th></tr></thead>
+                            <tbody>
+                                @foreach (var pay in Model.Payments)
+                                {
+                                    <tr>
+                                        <td>@(pay.PaymentDate?.ToString("MMM dd, yyyy hh:mm tt") ?? "N/A")</td>
+                                        <td>@(pay.PaymentMethod ?? "—")</td>
+                                        <td>$@((pay.AmountPaid ?? 0m).ToString("N2"))</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            }
+
+            <a asp-action="Invoices" class="btn btn-outline-secondary">&laquo; Back to invoices</a>
+        </div>
+    </div>
+</div>

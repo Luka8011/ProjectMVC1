@@ -1,0 +1,210 @@
+﻿@model IEnumerable<ClassLibrary1.Data.Models.Medication>
+
+@{
+    ViewData["Title"] = "Medicine Directory";
+    string currentFilter = ViewData["CurrentFilter"]?.ToString() ?? "";
+    bool inStockOnly = ViewData["InStockOnly"] as bool? ?? false;
+    int currentPage = ViewData["CurrentPage"] as int? ?? 1;
+    int totalPages = ViewData["TotalPages"] as int? ?? 1;
+    int totalCount = ViewData["TotalCount"] as int? ?? Model.Count();
+    int pageSize = ViewData["PageSize"] as int? ?? 9;
+    bool isDoctor = Context.Session.GetString("UserRole") == "Doctor";
+
+    int firstShown = totalCount == 0 ? 0 : (currentPage - 1) * pageSize + 1;
+    int lastShown = Math.Min(currentPage * pageSize, totalCount);
+    int windowStart = Math.Max(1, currentPage - 2);
+    int windowEnd = Math.Min(totalPages, currentPage + 2);
+}
+
+<div class="container py-5">
+
+    <div class="mb-5">
+        <h1 class="fw-bold">Medicine Directory</h1>
+        <p class="text-muted">
+            Browse available medications and check their prices and availability.
+        </p>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Search & filter -->
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-body p-3">
+            <form asp-controller="Medication" asp-action="Index" method="get">
+                <div class="input-group input-group-lg">
+                    <input type="text"
+                           name="searchString"
+                           value="@currentFilter"
+                           class="form-control"
+                           placeholder="Search medications by name..." />
+                    <button type="submit" class="btn btn-primary">Search</button>
+                </div>
+                <div class="form-check mt-3 ms-1">
+                    <input class="form-check-input" type="checkbox" name="inStockOnly" value="true"
+                           id="inStockOnly" @(inStockOnly ? "checked" : "")
+                           onchange="this.form.submit()" />
+                    <label class="form-check-label" for="inStockOnly">Show only medications in stock</label>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Medication List -->
+    @if (Model == null || !Model.Any())
+    {
+        <div class="alert alert-info text-center py-4">
+            <h5>No medications found</h5>
+            <p class="mb-0">Try searching for a different medication.</p>
+        </div>
+    }
+    else
+    {
+        <p class="text-muted small mb-3">
+            Showing @firstShown–@lastShown of @totalCount medications
+        </p>
+
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+
+            @foreach (var medication in Model)
+            {
+                <div class="col">
+                    <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden">
+
+                        <!-- Image (fixed height so the grid never shifts while images load) -->
+                        <div class="bg-light d-flex align-items-center justify-content-center p-3"
+                             style="height:200px;">
+                            @if (string.IsNullOrWhiteSpace(medication.ImagePath))
+                            {
+                                <span class="text-muted small">No image</span>
+                            }
+                            else
+                            {
+                                <img src="@medication.ImagePath"
+                                     alt="@medication.MedicationName"
+                                     loading="lazy" decoding="async"
+                                     style="max-height:100%; max-width:100%; object-fit:contain;"
+                                     onerror="this.onerror=null; this.outerHTML='<span class=&quot;text-muted small&quot;>No image</span>';" />
+                            }
+                        </div>
+
+                        <!-- Details -->
+                        <div class="card-body p-4">
+                            <h5 class="fw-bold mb-2">@medication.MedicationName</h5>
+
+                            <p class="text-muted small">
+                                @(string.IsNullOrWhiteSpace(medication.MedicationDescription)
+                                    ? "No description available."
+                                    : medication.MedicationDescription)
+                            </p>
+
+                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                <div>
+                                    <small class="text-muted d-block">Price</small>
+                                    <h5 class="text-primary fw-bold mb-0">
+                                        @(medication.UnitPrice?.ToString("0.00") ?? "N/A")
+                                    </h5>
+                                </div>
+
+                                <div class="text-end">
+                                    <small class="text-muted d-block">Available Stock</small>
+                                    @if (medication.StockQuantity > 0)
+                                    {
+                                        <span class="badge bg-success">@medication.StockQuantity available</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger">Out of stock</span>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+
+                        @if (isDoctor)
+                        {
+                            <div class="card-footer bg-white border-0 px-4 pb-4 pt-0">
+                                <a asp-controller="Medication"
+                                   asp-action="Prescription"
+                                   asp-route-medicationId="@medication.MedicationId"
+                                   class="btn btn-primary w-100">
+                                    Prescribe
+                                </a>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- Pagination -->
+        @if (totalPages > 1)
+        {
+            <nav aria-label="Medication pages" class="mt-5">
+                <ul class="pagination justify-content-center flex-wrap">
+
+                    <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                        <a class="page-link" asp-action="Index"
+                           asp-route-page="@(currentPage - 1)"
+                           asp-route-searchString="@currentFilter"
+                           asp-route-inStockOnly="@inStockOnly">&laquo; Previous</a>
+                    </li>
+
+                    @if (windowStart > 1)
+                    {
+                        <li class="page-item">
+                            <a class="page-link" asp-action="Index" asp-route-page="1"
+                               asp-route-searchString="@currentFilter"
+                               asp-route-inStockOnly="@inStockOnly">1</a>
+                        </li>
+                        @if (windowStart > 2)
+                        {
+                            <li class="page-item disabled"><span class="page-link">&hellip;</span></li>
+                        }
+                    }
+
+                    @for (int i = windowStart; i <= windowEnd; i++)
+                    {
+                        <li class="page-item @(i == currentPage ? "active" : "")">
+                            <a class="page-link" asp-action="Index" asp-route-page="@i"
+                               asp-route-searchString="@currentFilter"
+                               asp-route-inStockOnly="@inStockOnly">@i</a>
+                        </li>
+                    }
+
+                    @if (windowEnd < totalPages)
+                    {
+                        @if (windowEnd < totalPages - 1)
+                        {
+                            <li class="page-item disabled"><span class="page-link">&hellip;</span></li>
+                        }
+                        <li class="page-item">
+                            <a class="page-link" asp-action="Index" asp-route-page="@totalPages"
+                               asp-route-searchString="@currentFilter"
+                               asp-route-inStockOnly="@inStockOnly">@totalPages</a>
+                        </li>
+                    }
+
+                    <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                        <a class="page-link" asp-action="Index"
+                           asp-route-page="@(currentPage + 1)"
+                           asp-route-searchString="@currentFilter"
+                           asp-route-inStockOnly="@inStockOnly">Next &raquo;</a>
+                    </li>
+                </ul>
+            </nav>
+        }
+    }
+
+</div>

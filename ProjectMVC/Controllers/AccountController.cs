@@ -21,25 +21,21 @@ namespace ProjectMVC.Controllers
             _passwordHasher = passwordHasher;
         }
 
-        // GET: /Account/Login
         [HttpGet]
         public IActionResult Login()
         {
             return View();
         }
 
-        // GET: /Account/Register
         [HttpGet]
         public IActionResult Register()
         {
             return View();
         }
 
-        // POST: /Account/Login
         [HttpPost]
         public async Task<IActionResult> Login(string UserEmail, string UserPassword)
         {
-            // Query by email only (UserPassword in DB is hashed, direct string match fails)
             var user = await _context.Users.FirstOrDefaultAsync(u => u.UserEmail == UserEmail);
 
             if (user == null || string.IsNullOrEmpty(user.UserPassword))
@@ -56,7 +52,6 @@ namespace ProjectMVC.Controllers
                 return View();
             }
 
-            // Set Session values
             HttpContext.Session.SetInt32("UserId", user.UserId);
             HttpContext.Session.SetString("UserName", user.UserName ?? "");
             HttpContext.Session.SetString("UserRole", user.UserRole ?? "");
@@ -74,7 +69,6 @@ namespace ProjectMVC.Controllers
             return RedirectToAction("Index", "Home");
         }
 
-        // POST: /Account/Register
         [HttpPost]
         public async Task<IActionResult> Register(string UserName, string UserEmail, string UserPassword)
         {
@@ -97,7 +91,6 @@ namespace ProjectMVC.Controllers
             _context.Users.Add(newUser);
             await _context.SaveChangesAsync();
 
-            // Set Session values for the newly registered user
             HttpContext.Session.SetInt32("UserId", newUser.UserId);
             HttpContext.Session.SetString("UserName", newUser.UserName ?? "");
             HttpContext.Session.SetString("UserRole", newUser.UserRole ?? "");
@@ -117,7 +110,6 @@ namespace ProjectMVC.Controllers
 
         public IActionResult Logout()
         {
-            // Clear session and JWT cookie
             HttpContext.Session.Clear();
             Response.Cookies.Delete("JwtToken");
 
